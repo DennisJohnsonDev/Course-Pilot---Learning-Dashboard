@@ -1,32 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'app.dart';
+import 'core/storage/cache_store.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple)
-      ),
-      home: const MyHomePage(),
-    );
-  }
-}
+  await Hive.initFlutter();
+  final cacheStore = await CacheStore.open();
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text('Home Page')),
-    );
-  }
+  runApp(
+    ProviderScope(
+      overrides: [cacheStoreProvider.overrideWithValue(cacheStore)],
+      child: const CoursePilotApp(),
+    ),
+  );
 }
