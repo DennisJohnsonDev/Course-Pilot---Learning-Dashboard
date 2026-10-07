@@ -1,5 +1,6 @@
 import 'package:course_pilot/core/network/api_client.dart';
 import 'package:course_pilot/core/network/mock/mock_api_interceptor.dart';
+import 'package:course_pilot/core/storage/cache_store.dart';
 import 'package:course_pilot/core/storage/token_storage.dart';
 import 'package:course_pilot/features/auth/data/auth_mock_routes.dart';
 import 'package:course_pilot/features/auth/data/auth_remote_data_source.dart';
@@ -24,6 +25,23 @@ class _InMemoryTokenStorage implements TokenStorage {
   Future<void> clear() async => token = null;
 }
 
+class _InMemoryCacheStore implements CacheStore {
+  final entries = <String, CacheEntry>{};
+
+  @override
+  Future<void> write(String key, Object? data) async =>
+      entries[key] = CacheEntry(data: data, savedAt: DateTime.now());
+
+  @override
+  CacheEntry? read(String key) => entries[key];
+
+  @override
+  Future<void> remove(String key) async => entries.remove(key);
+
+  @override
+  Future<void> clear() async => entries.clear();
+}
+
 void main() {
   late _InMemoryTokenStorage tokenStorage;
   late ProviderContainer container;
@@ -38,6 +56,7 @@ void main() {
           AuthRepository(
             remote: AuthRemoteDataSource(ApiClient(dio)),
             tokenStorage: tokenStorage,
+            cacheStore: _InMemoryCacheStore(),
           ),
         ),
       ],

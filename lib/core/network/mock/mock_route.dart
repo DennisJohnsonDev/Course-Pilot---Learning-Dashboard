@@ -3,9 +3,13 @@ import 'package:dio/dio.dart';
 class MockResponse {
   const MockResponse(this.statusCode, [this.data]);
 
+  /// Simulates a request that never reaches the server.
+  const MockResponse.offline() : statusCode = 0, data = null;
+
   final int statusCode;
   final Object? data;
 
+  bool get isOffline => statusCode == 0;
   bool get isSuccessful => statusCode >= 200 && statusCode < 300;
 }
 

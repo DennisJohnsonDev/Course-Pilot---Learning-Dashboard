@@ -18,6 +18,17 @@ class MockApiInterceptor extends Interceptor {
     await Future<void>.delayed(latency);
 
     final mock = _resolve(options);
+    if (mock.isOffline) {
+      handler.reject(
+        DioException.connectionError(
+          requestOptions: options,
+          reason: 'Mock network is offline',
+        ),
+        true,
+      );
+      return;
+    }
+
     final response = Response<Object?>(
       requestOptions: options,
       statusCode: mock.statusCode,

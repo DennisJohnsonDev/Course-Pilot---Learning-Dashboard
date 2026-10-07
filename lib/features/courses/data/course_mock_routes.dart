@@ -1,7 +1,7 @@
 import '../../../core/network/mock/mock_route.dart';
 import 'course_remote_data_source.dart';
 
-enum CourseMockScenario { success, empty, failure }
+enum CourseMockScenario { success, empty, failure, offline }
 
 /// Change the scenario in `main.dart` to preview empty and error states.
 List<MockRoute> courseMockRoutes([
@@ -16,6 +16,7 @@ List<MockRoute> courseMockRoutes([
       CourseMockScenario.failure => const MockResponse(500, {
         'message': 'Courses are unavailable right now.',
       }),
+      CourseMockScenario.offline => const MockResponse.offline(),
     },
   ),
 ];

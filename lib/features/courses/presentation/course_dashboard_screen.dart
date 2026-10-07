@@ -8,10 +8,12 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/presentation/session_controller.dart';
 import '../data/models/course.dart';
+import '../data/models/course_feed.dart';
 import 'courses_provider.dart';
 import 'widgets/course_card.dart';
 import 'widgets/course_list_skeleton.dart';
 import 'widgets/dashboard_message.dart';
+import 'widgets/offline_banner.dart';
 
 class CourseDashboardScreen extends ConsumerWidget {
   const CourseDashboardScreen({super.key});
@@ -23,16 +25,24 @@ class CourseDashboardScreen extends ConsumerWidget {
     final courses = ref.watch(coursesProvider);
     final theme = Theme.of(context);
 
-    ref.listen(coursesProvider, (_, next) {
-      if (next case AsyncError(:final error, hasValue: true)) {
+    ref.listen(coursesProvider, (previous, next) {
+      final isRefresh = previous?.hasValue ?? false;
+      final failure = switch (next) {
+        AsyncError(:final error, hasValue: true) => error,
+        AsyncData(value: CourseFeed(:final refreshFailure?)) when isRefresh =>
+          refreshFailure,
+        _ => null,
+      };
+      if (failure != null) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(_messageFor(error))));
+          ..showSnackBar(SnackBar(content: Text(_messageFor(failure))));
       }
     });
 
+    final feed = courses.value;
     final content = switch (courses) {
-      AsyncValue(value: final courses?) when courses.isEmpty =>
+      AsyncValue(value: CourseFeed(:final courses)) when courses.isEmpty =>
         const SliverFillRemaining(
           hasScrollBody: false,
           child: DashboardMessage(
@@ -41,15 +51,19 @@ class CourseDashboardScreen extends ConsumerWidget {
             message: 'Courses you enroll in will show up here.',
           ),
         ),
-      AsyncValue(value: final courses?) => _CourseList(courses),
+      AsyncValue(value: CourseFeed(:final courses)) => _CourseList(courses),
       AsyncValue(isLoading: true) => const SliverToBoxAdapter(
         child: CourseListSkeleton(),
       ),
       AsyncValue(:final error?) => SliverFillRemaining(
         hasScrollBody: false,
         child: DashboardMessage(
-          icon: CupertinoIcons.exclamationmark_circle,
-          title: "Couldn't load courses",
+          icon: error is NetworkFailure
+              ? CupertinoIcons.wifi_slash
+              : CupertinoIcons.exclamationmark_circle,
+          title: error is NetworkFailure
+              ? "You're offline"
+              : "Couldn't load courses",
           message: _messageFor(error),
           actionLabel: 'Try Again',
           onAction: () => ref.invalidate(coursesProvider),
@@ -99,6 +113,30 @@ class CourseDashboardScreen extends ConsumerWidget {
                 }
               },
             ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            sliver: SliverConstrainedCrossAxis(
+              maxExtent: _maxContentWidth,
+              sliver: SliverToBoxAdapter(
+                child: _AnimatedBanner(
+                  child: switch (feed) {
+                    CourseFeed(:final savedAt?, :final refreshFailure?) =>
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.xs,
+                        ),
+                        child: OfflineBanner(
+                          failure: refreshFailure,
+                          savedAt: savedAt,
+                        ),
+                      ),
+                    _ => null,
+                  },
+                ),
+              ),
+            ),
+          ),
           SliverSafeArea(
             top: false,
             minimum: const EdgeInsets.fromLTRB(
@@ -113,6 +151,25 @@ class CourseDashboardScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedBanner extends StatelessWidget {
+  const _AnimatedBanner({required this.child});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        child: child ?? const SizedBox(width: double.infinity),
       ),
     );
   }
