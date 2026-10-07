@@ -18,12 +18,16 @@ AppFailure mapDioException(DioException exception) {
 
 AppFailure _mapResponse(Response<Object?>? response) {
   final statusCode = response?.statusCode;
-  if (statusCode == 401) return const UnauthorizedFailure();
-
   final message = switch (response?.data) {
     {'message': final String message} => message,
     _ => null,
   };
+
+  if (statusCode == 401) {
+    return message == null
+        ? const UnauthorizedFailure()
+        : UnauthorizedFailure(message);
+  }
 
   return message == null
       ? ServerFailure(statusCode: statusCode)

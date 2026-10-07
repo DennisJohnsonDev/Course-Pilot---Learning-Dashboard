@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-class CoursePilotApp extends StatelessWidget {
+class CoursePilotApp extends ConsumerWidget {
   const CoursePilotApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: 'Course Pilot',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      // Replaced by the app router once the first screen is built.
-      home: const Scaffold(),
+      routerConfig: ref.watch(appRouterProvider),
     );
   }
 }
