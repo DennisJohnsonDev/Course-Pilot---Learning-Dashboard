@@ -130,7 +130,7 @@ class _StatusMark extends StatelessWidget {
       child: AnimatedSwitcher(
         duration: LessonTile._duration,
         transitionBuilder: (child, animation) => ScaleTransition(
-          scale: animation,
+          scale: animation.drive(CurveTween(curve: Curves.easeOutBack)),
           child: FadeTransition(opacity: animation, child: child),
         ),
         child: isCompleted

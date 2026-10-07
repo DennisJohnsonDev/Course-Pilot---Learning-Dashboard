@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 import '../theme/app_motion.dart';
 
-/// Fades and lifts its child into place when it first appears, staggered by
-/// [index].
+/// Fades, lifts and settles its child into place when it first appears,
+/// staggered by [index].
 class Entrance extends StatefulWidget {
   const Entrance({required this.child, this.index = 0, super.key});
 
@@ -15,9 +15,11 @@ class Entrance extends StatefulWidget {
 }
 
 class _EntranceState extends State<Entrance> {
-  static const _step = Duration(milliseconds: 50);
-  static const _maxStagger = 6;
-  static const _rise = 12.0;
+  static const _duration = Duration(milliseconds: 560);
+  static const _step = Duration(milliseconds: 55);
+  static const _maxStagger = 7;
+  static const _rise = 22.0;
+  static const _shrink = 0.03;
 
   late final bool _animates =
       !MediaQuery.disableAnimationsOf(context) &&
@@ -26,18 +28,18 @@ class _EntranceState extends State<Entrance> {
   @override
   Widget build(BuildContext context) {
     final steps = widget.index.clamp(0, _maxStagger);
-    final total = AppMotion.slow + _step * steps;
+    final total = _duration + _step * steps;
     final start = (_step * steps).inMilliseconds / total.inMilliseconds;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: _animates ? 0 : 1, end: 1),
       duration: total,
-      curve: Interval(start, 1, curve: AppMotion.easeOut),
+      curve: Interval(start, 1, curve: AppMotion.settle),
       builder: (context, t, child) => Opacity(
         opacity: t,
         child: Transform.translate(
           offset: Offset(0, (1 - t) * _rise),
-          child: child,
+          child: Transform.scale(scale: 1 - (1 - t) * _shrink, child: child),
         ),
       ),
       child: widget.child,

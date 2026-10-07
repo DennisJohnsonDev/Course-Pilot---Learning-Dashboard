@@ -42,7 +42,7 @@ void main() {
     final feed = await repository(courseMockRoutes()).fetchCourses();
 
     expect(feed.isCached, isFalse);
-    expect(feed.courses, hasLength(3));
+    expect(feed.courses, hasLength(10));
     expect(feed.courses.first.title, 'Python Programming');
     expect(feed.courses.first.instructor, 'John Smith');
     expect(feed.courses.first.lessons, hasLength(4));
@@ -107,7 +107,8 @@ void main() {
 
     expect(feed.isCached, isTrue);
     expect(feed.refreshFailure, isA<NetworkFailure>());
-    expect(feed.courses.map((c) => c.title), [
+    expect(feed.courses, hasLength(10));
+    expect(feed.courses.map((c) => c.title).take(3), [
       'Python Programming',
       'Generative AI',
       'Full Stack Development',
@@ -123,7 +124,7 @@ void main() {
 
     expect(feed.isCached, isTrue);
     expect(feed.refreshFailure, isA<ServerFailure>());
-    expect(feed.courses, hasLength(3));
+    expect(feed.courses, hasLength(10));
   });
 
   test('ignores an unreadable saved entry', () async {

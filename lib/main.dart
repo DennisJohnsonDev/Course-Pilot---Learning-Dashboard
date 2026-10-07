@@ -5,6 +5,7 @@ import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'app.dart';
 import 'core/network/mock/mock_routes.dart';
 import 'core/storage/cache_store.dart';
+import 'core/storage/settings_store.dart';
 import 'features/auth/data/auth_mock_routes.dart';
 import 'features/auth/presentation/session_controller.dart';
 import 'features/courses/data/course_mock_routes.dart';
@@ -14,11 +15,13 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   final cacheStore = await CacheStore.open();
+  final settingsStore = await SettingsStore.open();
   final courseMockStorage = await Hive.openBox<bool>(courseMockStorageBox);
 
   final container = ProviderContainer(
     overrides: [
       cacheStoreProvider.overrideWithValue(cacheStore),
+      settingsStoreProvider.overrideWithValue(settingsStore),
       mockRoutesProvider.overrideWithValue([
         ...authMockRoutes,
         ...courseMockRoutes(storage: courseMockStorage),

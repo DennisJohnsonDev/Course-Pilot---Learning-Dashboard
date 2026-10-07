@@ -26,10 +26,24 @@ class AuthRepository {
   final TokenStorage _tokenStorage;
   final CacheStore _cacheStore;
 
+  static const _userKey = 'user';
+
   Future<User> signIn({required String email, required String password}) async {
     final response = await _remote.login(email: email, password: password);
     await _tokenStorage.saveAccessToken(response.accessToken);
+    await _cacheStore.write(_userKey, response.user.toJson());
     return response.user;
+  }
+
+  User? savedUser() {
+    try {
+      return switch (_cacheStore.read(_userKey)?.data) {
+        final Map<String, Object?> json => User.fromJson(json),
+        _ => null,
+      };
+    } on Object {
+      return null;
+    }
   }
 
   Future<bool> hasSession() async {

@@ -8,4 +8,10 @@ abstract final class AppMotion {
 
   static const easeOut = Curves.easeOutCubic;
   static const easeInOut = Curves.easeInOutCubic;
+
+  /// Long, soft landing for things arriving on screen.
+  static const settle = Curves.easeOutQuart;
+
+  /// Fast start and long glide, for elements that travel across the screen.
+  static const emphasized = Curves.easeInOutCubicEmphasized;
 }

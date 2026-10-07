@@ -1,10 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/auth_repository.dart';
+import '../data/models/user.dart';
 
 final sessionControllerProvider = NotifierProvider<SessionController, bool>(
   SessionController.new,
 );
+
+final currentUserProvider = Provider<User?>((ref) {
+  ref.watch(sessionControllerProvider);
+  return ref.read(authRepositoryProvider).savedUser();
+});
 
 /// App-wide signed-in flag. The router listens to it to guard routes.
 class SessionController extends Notifier<bool> {

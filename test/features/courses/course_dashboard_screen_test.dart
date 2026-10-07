@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:course_pilot/core/error/app_failure.dart';
 import 'package:course_pilot/core/theme/app_theme.dart';
+import 'package:course_pilot/features/auth/presentation/session_controller.dart';
 import 'package:course_pilot/features/courses/data/models/course.dart';
 import 'package:course_pilot/features/courses/data/models/course_feed.dart';
 import 'package:course_pilot/features/courses/data/models/lesson.dart';
@@ -9,6 +10,7 @@ import 'package:course_pilot/features/courses/presentation/course_dashboard_scre
 import 'package:course_pilot/features/courses/presentation/courses_provider.dart';
 import 'package:course_pilot/features/courses/presentation/widgets/course_list_skeleton.dart';
 import 'package:course_pilot/features/courses/presentation/widgets/offline_banner.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +27,13 @@ const _course = Course(
   ],
 );
 
+const _otherCourse = Course(
+  id: 2,
+  title: 'Generative AI',
+  instructor: 'Sarah Williams',
+  lessons: [Lesson(id: 1, title: 'Prompting', isCompleted: false)],
+);
+
 class _StubCourses extends CoursesNotifier {
   _StubCourses(this._load);
 
@@ -35,7 +44,10 @@ class _StubCourses extends CoursesNotifier {
 }
 
 Widget _dashboard(Future<CourseFeed> Function() load) => ProviderScope(
-  overrides: [coursesProvider.overrideWith(() => _StubCourses(load))],
+  overrides: [
+    coursesProvider.overrideWith(() => _StubCourses(load)),
+    currentUserProvider.overrideWithValue(null),
+  ],
   child: MaterialApp(
     theme: AppTheme.light,
     home: const CourseDashboardScreen(),
@@ -149,5 +161,31 @@ void main() {
 
     expect(find.byType(OfflineBanner), findsNothing);
     expect(find.text('Python Programming'), findsOneWidget);
+  });
+
+  testWidgets('filters courses by title or instructor while searching', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _dashboard(() async => const CourseFeed([_course, _otherCourse])),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(CupertinoIcons.search));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'sarah');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Generative AI'), findsOneWidget);
+    expect(find.text('Python Programming'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), 'kotlin');
+    await tester.pumpAndSettle();
+    expect(find.text('No matches'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Python Programming'), findsOneWidget);
+    expect(find.text('Generative AI'), findsOneWidget);
   });
 }

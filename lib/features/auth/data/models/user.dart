@@ -10,4 +10,6 @@ class User {
   final String id;
   final String name;
   final String email;
+
+  Map<String, Object?> toJson() => {'id': id, 'name': name, 'email': email};
 }

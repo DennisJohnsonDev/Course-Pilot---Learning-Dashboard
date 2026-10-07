@@ -12,7 +12,7 @@ Feature-first folders (`features/auth`, `features/courses`), each split into `da
 - **Data:** remote and local data sources sit behind a repository. The repository is the only place that decides between network and cache, and it turns every error into a typed `AppFailure`, so the UI never sees Dio or Hive.
 - **State:** Riverpod (`AsyncNotifier`/`Notifier`). Screens render the `AsyncValue` with an exhaustive `switch` (loading, data, empty, error). Lesson completion is optimistic: the UI updates instantly and rolls back if the repository throws.
 - **Domain logic** lives on the models: `Course.progress` is derived from completed lessons, never stored.
-- **Navigation:** go_router, with a redirect driven by the session state.
+- **Navigation:** go_router, with a redirect driven by the session state. Two small custom routes: a course card grows into its details screen (with iOS swipe-back), and signing in or out crossfades the stack.
 
 I chose this because it keeps each layer testable in isolation (the repository runs against the mock API, and screens run against a stubbed repository) without adding more layers than a small app needs.
 
@@ -34,4 +34,4 @@ The access token is stored in `flutter_secure_storage` (Keychain on iOS/macOS, K
 
 ## Second platform
 
-The app is written once in Flutter and already runs on iOS, Android and macOS from this codebase. Platform-specific pieces are small: secure storage maps to Keychain or Keystore automatically, page transitions follow each platform (Cupertino slide and swipe-back on iOS, the native transition and predictive back on Android), and the layout is width-constrained so it also works on tablets and desktop. Shipping a new platform means configuring signing, icons and entitlements (for example the Keychain entitlement on macOS) and testing on real devices, not rewriting features.
+The app is written once in Flutter and already runs on iOS, Android and macOS from this codebase. Platform-specific pieces are small: secure storage maps to Keychain or Keystore automatically, navigation keeps each platform's back conventions (edge swipe-back on iOS, system back on Android), and the layout is width-constrained so it also works on tablets and desktop. Shipping a new platform means configuring signing, icons and entitlements (for example the Keychain entitlement on macOS) and testing on real devices, not rewriting features.

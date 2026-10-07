@@ -1,21 +1,30 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_motion.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../data/models/course.dart';
+import '../courses_provider.dart';
 
 class CourseCard extends StatelessWidget {
   const CourseCard({required this.course, required this.onOpen, super.key});
 
   final Course course;
-  final VoidCallback onOpen;
+
+  /// Receives the card's on-screen rect, so the page can grow out of it.
+  final ValueChanged<Rect> onOpen;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+
+    void open() {
+      final box = context.findRenderObject()! as RenderBox;
+      onOpen(box.localToGlobal(Offset.zero) & box.size);
+    }
 
     return Semantics(
       button: true,
@@ -23,11 +32,11 @@ class CourseCard extends StatelessWidget {
           '${course.title}, ${course.instructor}, '
           '${course.progress}% complete, ${_lessonsLabel(course.lessons.length)}',
       excludeSemantics: true,
-      onTap: onOpen,
+      onTap: open,
       child: Pressable(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: onOpen,
+          onTap: open,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colors.surface,
@@ -68,7 +77,7 @@ class CourseCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       FilledButton(
-                        onPressed: onOpen,
+                        onPressed: open,
                         style: FilledButton.styleFrom(
                           minimumSize: const Size(0, 36),
                           padding: const EdgeInsets.symmetric(
@@ -98,6 +107,20 @@ class CourseCard extends StatelessWidget {
   }
 }
 
+/// The card for [courseId] as it looks right now, for the open transition.
+class LiveCourseCard extends ConsumerWidget {
+  const LiveCourseCard({required this.courseId, super.key});
+
+  final int courseId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final course = ref.watch(courseProvider(courseId)).value;
+    if (course == null) return const SizedBox.shrink();
+    return CourseCard(course: course, onOpen: (_) {});
+  }
+}
+
 class _ProgressRow extends StatelessWidget {
   const _ProgressRow({required this.progress});
 
@@ -121,7 +144,7 @@ class _ProgressRow extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           SizedBox(
-            width: 40,
+            width: 48,
             child: Text(
               '${(value * 100).round()}%',
               textAlign: TextAlign.end,
