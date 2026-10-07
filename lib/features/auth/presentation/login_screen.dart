@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/entrance.dart';
+import '../../../core/widgets/pressable.dart';
 import '../data/auth_mock_routes.dart';
 import 'login_view_model.dart';
 import 'widgets/login_failure_message.dart';
@@ -33,44 +35,60 @@ class LoginScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 64),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: _AppMark(),
+                  const Entrance(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _AppMark(),
+                    ),
                   ),
                   const SizedBox(height: 28),
-                  Text('Welcome back', style: theme.textTheme.headlineLarge),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Sign in to pick up where you left off.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                  Entrance(
+                    index: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome back',
+                          style: theme.textTheme.headlineLarge,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Sign in to pick up where you left off.',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 40),
-                  AutofillGroup(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          onChanged: viewModel.updateEmail,
-                          readOnly: state.isSubmitting,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          autofillHints: const [AutofillHints.email],
-                          decoration: InputDecoration(
-                            hintText: 'Email',
-                            errorText: state.emailError,
+                  Entrance(
+                    index: 2,
+                    child: AutofillGroup(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextField(
+                            onChanged: viewModel.updateEmail,
+                            readOnly: state.isSubmitting,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            autocorrect: false,
+                            autofillHints: const [AutofillHints.email],
+                            decoration: InputDecoration(
+                              hintText: 'Email',
+                              errorText: state.emailError,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        PasswordField(
-                          onChanged: viewModel.updatePassword,
-                          onSubmitted: viewModel.submit,
-                          readOnly: state.isSubmitting,
-                          errorText: state.passwordError,
-                        ),
-                      ],
+                          const SizedBox(height: AppSpacing.md),
+                          PasswordField(
+                            onChanged: viewModel.updatePassword,
+                            onSubmitted: viewModel.submit,
+                            readOnly: state.isSubmitting,
+                            errorText: state.passwordError,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   AnimatedSize(
@@ -85,26 +103,34 @@ class LoginScreen extends ConsumerWidget {
                           ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  FilledButton(
-                    onPressed: viewModel.submit,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: state.isSubmitting
-                          ? SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            )
-                          : const Text('Sign In'),
+                  Entrance(
+                    index: 3,
+                    child: Pressable(
+                      child: FilledButton(
+                        onPressed: viewModel.submit,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: state.isSubmitting
+                              ? SizedBox.square(
+                                  dimension: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                )
+                              : const Text('Sign In'),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'Demo account: ${DemoAccount.email} · ${DemoAccount.password}',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall,
+                  Entrance(
+                    index: 4,
+                    child: Text(
+                      'Demo account: ${DemoAccount.email} · ${DemoAccount.password}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                 ],

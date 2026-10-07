@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
-class DashboardMessage extends StatelessWidget {
-  const DashboardMessage({
+class StateMessage extends StatelessWidget {
+  const StateMessage({
     required this.icon,
     required this.title,
     required this.message,

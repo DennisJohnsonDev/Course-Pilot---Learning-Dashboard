@@ -59,6 +59,7 @@ abstract final class AppTheme {
         foregroundColor: colors.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: true,
         titleTextStyle: textTheme.titleMedium,
       ),
@@ -74,7 +75,7 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colors.surfaceContainerHighest,
+        fillColor: colors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
@@ -83,7 +84,7 @@ abstract final class AppTheme {
           color: colors.onSurfaceVariant,
         ),
         border: _inputBorder(Colors.transparent),
-        enabledBorder: _inputBorder(Colors.transparent),
+        enabledBorder: _inputBorder(colors.outlineVariant),
         focusedBorder: _inputBorder(colors.primary),
         errorBorder: _inputBorder(colors.error),
         focusedErrorBorder: _inputBorder(colors.error),

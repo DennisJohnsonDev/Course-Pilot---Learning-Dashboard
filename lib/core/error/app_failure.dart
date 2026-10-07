@@ -1,3 +1,6 @@
+String failureMessage(Object error) =>
+    error is AppFailure ? error.message : const UnknownFailure().message;
+
 sealed class AppFailure implements Exception {
   const AppFailure(this.message);
 

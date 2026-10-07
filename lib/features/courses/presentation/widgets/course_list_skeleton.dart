@@ -11,35 +11,63 @@ class CourseListSkeleton extends StatefulWidget {
 
 class _CourseListSkeletonState extends State<CourseListSkeleton>
     with SingleTickerProviderStateMixin {
-  late final _pulse = AnimationController(
+  late final _sweep = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
+    duration: const Duration(milliseconds: 1400),
+  )..repeat();
 
   @override
   void dispose() {
-    _pulse.dispose();
+    _sweep.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final highlight = Colors.white.withValues(alpha: isDark ? 0.05 : 0.6);
+
     return Semantics(
       label: 'Loading courses',
-      child: FadeTransition(
-        opacity: Tween<double>(begin: 1, end: 0.55).animate(_pulse),
-        child: const Column(
-          children: [
-            _SkeletonCard(titleWidth: 0.62),
-            SizedBox(height: AppSpacing.md),
-            _SkeletonCard(titleWidth: 0.45),
-            SizedBox(height: AppSpacing.md),
-            _SkeletonCard(titleWidth: 0.7),
-          ],
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _sweep,
+          builder: (context, child) => ShaderMask(
+            blendMode: BlendMode.srcATop,
+            shaderCallback: (bounds) => LinearGradient(
+              colors: [
+                highlight.withValues(alpha: 0),
+                highlight,
+                highlight.withValues(alpha: 0),
+              ],
+              stops: const [0.3, 0.5, 0.7],
+              transform: _Slide(_sweep.value * 2 - 1),
+            ).createShader(bounds),
+            child: child,
+          ),
+          child: const Column(
+            children: [
+              _SkeletonCard(titleWidth: 0.62),
+              SizedBox(height: AppSpacing.md),
+              _SkeletonCard(titleWidth: 0.45),
+              SizedBox(height: AppSpacing.md),
+              _SkeletonCard(titleWidth: 0.7),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _Slide extends GradientTransform {
+  const _Slide(this.offset);
+
+  final double offset;
+
+  @override
+  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) =>
+      Matrix4.translationValues(bounds.width * offset, 0, 0);
 }
 
 class _SkeletonCard extends StatelessWidget {

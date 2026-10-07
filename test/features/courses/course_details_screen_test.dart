@@ -53,7 +53,13 @@ void main() {
     await tester.pumpWidget(_details(_FakeRepository()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Python Programming'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(CustomScrollView),
+        matching: find.text('Python Programming'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('50%'), findsOneWidget);
     expect(find.text('2 lessons to go'), findsOneWidget);
     expect(find.text('Completed'), findsNWidgets(2));

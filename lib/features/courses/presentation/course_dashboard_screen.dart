@@ -6,13 +6,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/app_failure.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/entrance.dart';
 import '../../auth/presentation/session_controller.dart';
 import '../data/models/course.dart';
 import '../data/models/course_feed.dart';
 import 'courses_provider.dart';
 import 'widgets/course_card.dart';
 import 'widgets/course_list_skeleton.dart';
-import 'widgets/dashboard_message.dart';
+import 'widgets/state_message.dart';
 import 'widgets/offline_banner.dart';
 
 class CourseDashboardScreen extends ConsumerWidget {
@@ -37,7 +38,7 @@ class CourseDashboardScreen extends ConsumerWidget {
       if (failure != null) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(_messageFor(failure))));
+          ..showSnackBar(SnackBar(content: Text(failureMessage(failure))));
       }
     });
 
@@ -46,10 +47,12 @@ class CourseDashboardScreen extends ConsumerWidget {
       AsyncValue(value: CourseFeed(:final courses)) when courses.isEmpty =>
         const SliverFillRemaining(
           hasScrollBody: false,
-          child: DashboardMessage(
-            icon: CupertinoIcons.book,
-            title: 'No courses yet',
-            message: 'Courses you enroll in will show up here.',
+          child: Entrance(
+            child: StateMessage(
+              icon: CupertinoIcons.book,
+              title: 'No courses yet',
+              message: 'Courses you enroll in will show up here.',
+            ),
           ),
         ),
       AsyncValue(value: CourseFeed(:final courses)) => _CourseList(courses),
@@ -58,16 +61,18 @@ class CourseDashboardScreen extends ConsumerWidget {
       ),
       AsyncValue(:final error?) => SliverFillRemaining(
         hasScrollBody: false,
-        child: DashboardMessage(
-          icon: error is NetworkFailure
-              ? CupertinoIcons.wifi_slash
-              : CupertinoIcons.exclamationmark_circle,
-          title: error is NetworkFailure
-              ? "You're offline"
-              : "Couldn't load courses",
-          message: _messageFor(error),
-          actionLabel: 'Try Again',
-          onAction: () => ref.invalidate(coursesProvider),
+        child: Entrance(
+          child: StateMessage(
+            icon: error is NetworkFailure
+                ? CupertinoIcons.wifi_slash
+                : CupertinoIcons.exclamationmark_circle,
+            title: error is NetworkFailure
+                ? "You're offline"
+                : "Couldn't load courses",
+            message: failureMessage(error),
+            actionLabel: 'Try Again',
+            onAction: () => ref.invalidate(coursesProvider),
+          ),
         ),
       ),
       _ => const SliverToBoxAdapter(child: CourseListSkeleton()),
@@ -183,19 +188,21 @@ class _CourseList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverList.separated(
-      itemCount: courses.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-      itemBuilder: (context, index) {
-        final course = courses[index];
-        return CourseCard(
-          course: course,
-          onOpen: () => context.push(AppRoutes.courseDetails(course.id)),
-        );
-      },
+    return EntranceScope(
+      child: SliverList.separated(
+        itemCount: courses.length,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+        itemBuilder: (context, index) {
+          final course = courses[index];
+          return Entrance(
+            index: index,
+            child: CourseCard(
+              course: course,
+              onOpen: () => context.push(AppRoutes.courseDetails(course.id)),
+            ),
+          );
+        },
+      ),
     );
   }
 }
-
-String _messageFor(Object error) =>
-    error is AppFailure ? error.message : const UnknownFailure().message;

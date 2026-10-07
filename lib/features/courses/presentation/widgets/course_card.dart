@@ -1,29 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_motion.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../data/models/course.dart';
 
-class CourseCard extends StatefulWidget {
+class CourseCard extends StatelessWidget {
   const CourseCard({required this.course, required this.onOpen, super.key});
 
   final Course course;
   final VoidCallback onOpen;
 
   @override
-  State<CourseCard> createState() => _CourseCardState();
-}
-
-class _CourseCardState extends State<CourseCard> {
-  bool _pressed = false;
-
-  void _setPressed(bool pressed) {
-    if (_pressed != pressed) setState(() => _pressed = pressed);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final course = widget.course;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -33,17 +23,11 @@ class _CourseCardState extends State<CourseCard> {
           '${course.title}, ${course.instructor}, '
           '${course.progress}% complete, ${_lessonsLabel(course.lessons.length)}',
       excludeSemantics: true,
-      onTap: widget.onOpen,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onOpen,
-        onTapDown: (_) => _setPressed(true),
-        onTapUp: (_) => _setPressed(false),
-        onTapCancel: () => _setPressed(false),
-        child: AnimatedScale(
-          scale: _pressed ? 0.98 : 1,
-          duration: const Duration(milliseconds: 140),
-          curve: Curves.easeOut,
+      onTap: onOpen,
+      child: Pressable(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onOpen,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colors.surface,
@@ -84,7 +68,7 @@ class _CourseCardState extends State<CourseCard> {
                       ),
                       const Spacer(),
                       FilledButton(
-                        onPressed: widget.onOpen,
+                        onPressed: onOpen,
                         style: FilledButton.styleFrom(
                           minimumSize: const Size(0, 36),
                           padding: const EdgeInsets.symmetric(
@@ -123,31 +107,33 @@ class _ProgressRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Row(
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0, 100) / 100,
-              minHeight: 6,
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: progress.clamp(0, 100) / 100),
+      duration: AppMotion.slow * 2,
+      curve: AppMotion.easeInOut,
+      builder: (context, value, _) => Row(
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(value: value, minHeight: 6),
             ),
           ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        SizedBox(
-          width: 40,
-          child: Text(
-            '$progress%',
-            textAlign: TextAlign.end,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-              fontFeatures: const [FontFeature.tabularFigures()],
+          const SizedBox(width: AppSpacing.md),
+          SizedBox(
+            width: 40,
+            child: Text(
+              '${(value * 100).round()}%',
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
