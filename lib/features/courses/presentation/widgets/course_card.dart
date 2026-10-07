@@ -31,7 +31,7 @@ class _CourseCardState extends State<CourseCard> {
       button: true,
       label:
           '${course.title}, ${course.instructor}, '
-          '${course.progress}% complete, ${_lessonsLabel(course.lessons)}',
+          '${course.progress}% complete, ${_lessonsLabel(course.lessons.length)}',
       excludeSemantics: true,
       onTap: widget.onOpen,
       child: GestureDetector(
@@ -79,7 +79,7 @@ class _CourseCardState extends State<CourseCard> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _lessonsLabel(course.lessons),
+                        _lessonsLabel(course.lessons.length),
                         style: theme.textTheme.bodySmall,
                       ),
                       const Spacer(),

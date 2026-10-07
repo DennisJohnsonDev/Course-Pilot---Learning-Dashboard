@@ -3,6 +3,11 @@ import 'models/course.dart';
 
 abstract final class CourseEndpoints {
   static const courses = '/courses';
+  static const completeLessonPattern =
+      '/courses/:courseId/lessons/:lessonId/complete';
+
+  static String completeLesson(int courseId, int lessonId) =>
+      '/courses/$courseId/lessons/$lessonId/complete';
 }
 
 class CourseRemoteDataSource {
@@ -17,4 +22,7 @@ class CourseRemoteDataSource {
         .map(Course.fromJson)
         .toList(growable: false);
   }
+
+  Future<void> completeLesson(int courseId, int lessonId) =>
+      _client.post<Object?>(CourseEndpoints.completeLesson(courseId, lessonId));
 }

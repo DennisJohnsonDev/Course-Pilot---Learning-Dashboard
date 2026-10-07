@@ -14,13 +14,14 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   final cacheStore = await CacheStore.open();
+  final courseMockStorage = await Hive.openBox<bool>(courseMockStorageBox);
 
   final container = ProviderContainer(
     overrides: [
       cacheStoreProvider.overrideWithValue(cacheStore),
       mockRoutesProvider.overrideWithValue([
         ...authMockRoutes,
-        ...courseMockRoutes(),
+        ...courseMockRoutes(storage: courseMockStorage),
       ]),
     ],
   );

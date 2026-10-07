@@ -10,6 +10,8 @@ class CourseFeed {
     required AppFailure this.refreshFailure,
   });
 
+  const CourseFeed._(this.courses, this.savedAt, this.refreshFailure);
+
   final List<Course> courses;
 
   /// Set only when fresh data couldn't be fetched and saved courses are shown.
@@ -17,4 +19,10 @@ class CourseFeed {
   final AppFailure? refreshFailure;
 
   bool get isCached => savedAt != null;
+
+  CourseFeed replacing(Course course) => CourseFeed._(
+    [for (final c in courses) c.id == course.id ? course : c],
+    savedAt,
+    refreshFailure,
+  );
 }

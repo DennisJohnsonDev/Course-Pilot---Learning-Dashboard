@@ -25,6 +25,7 @@ class CourseRepository {
   /// [AppFailure] only when nothing usable is saved.
   Future<CourseFeed> fetchCourses() async {
     try {
+      await _sendPendingCompletions();
       final courses = await _fetchRemote();
       await _save(courses);
       return CourseFeed(courses);
@@ -38,6 +39,39 @@ class CourseRepository {
         savedAt: cached.savedAt,
         refreshFailure: failure,
       );
+    }
+  }
+
+  /// Saves the completion locally and queues it for the next fetch when the
+  /// server can't be reached.
+  Future<void> completeLesson(int courseId, int lessonId) async {
+    try {
+      await _remote.completeLesson(courseId, lessonId);
+    } on UnauthorizedFailure {
+      rethrow;
+    } on AppFailure {
+      await _local.addPendingCompletion((
+        courseId: courseId,
+        lessonId: lessonId,
+      ));
+    }
+
+    try {
+      await _local.markLessonCompleted(courseId, lessonId);
+    } on Object {
+      // The next successful fetch rewrites the cache.
+    }
+  }
+
+  Future<void> _sendPendingCompletions() async {
+    for (final completion in _local.readPendingCompletions()) {
+      try {
+        await _remote.completeLesson(completion.courseId, completion.lessonId);
+      } on ServerFailure catch (failure) {
+        final isRejected = (failure.statusCode ?? 500) < 500;
+        if (!isRejected) rethrow;
+      }
+      await _local.removePendingCompletion(completion);
     }
   }
 

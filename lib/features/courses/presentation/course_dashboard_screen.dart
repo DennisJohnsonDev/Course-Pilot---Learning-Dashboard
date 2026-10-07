@@ -26,7 +26,8 @@ class CourseDashboardScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     ref.listen(coursesProvider, (previous, next) {
-      final isRefresh = previous?.hasValue ?? false;
+      final isRefresh =
+          previous is AsyncLoading<CourseFeed> && previous.hasValue;
       final failure = switch (next) {
         AsyncError(:final error, hasValue: true) => error,
         AsyncData(value: CourseFeed(:final refreshFailure?)) when isRefresh =>

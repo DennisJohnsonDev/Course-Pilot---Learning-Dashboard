@@ -4,6 +4,7 @@ import 'package:course_pilot/core/error/app_failure.dart';
 import 'package:course_pilot/core/theme/app_theme.dart';
 import 'package:course_pilot/features/courses/data/models/course.dart';
 import 'package:course_pilot/features/courses/data/models/course_feed.dart';
+import 'package:course_pilot/features/courses/data/models/lesson.dart';
 import 'package:course_pilot/features/courses/presentation/course_dashboard_screen.dart';
 import 'package:course_pilot/features/courses/presentation/courses_provider.dart';
 import 'package:course_pilot/features/courses/presentation/widgets/course_list_skeleton.dart';
@@ -16,12 +17,25 @@ const _course = Course(
   id: 1,
   title: 'Python Programming',
   instructor: 'John Smith',
-  progress: 65,
-  lessons: 20,
+  lessons: [
+    Lesson(id: 1, title: 'Introduction', isCompleted: true),
+    Lesson(id: 2, title: 'Variables & Data Types', isCompleted: true),
+    Lesson(id: 3, title: 'Functions', isCompleted: true),
+    Lesson(id: 4, title: 'OOP', isCompleted: false),
+  ],
 );
 
+class _StubCourses extends CoursesNotifier {
+  _StubCourses(this._load);
+
+  final Future<CourseFeed> Function() _load;
+
+  @override
+  Future<CourseFeed> build() => _load();
+}
+
 Widget _dashboard(Future<CourseFeed> Function() load) => ProviderScope(
-  overrides: [coursesProvider.overrideWith((ref) => load())],
+  overrides: [coursesProvider.overrideWith(() => _StubCourses(load))],
   child: MaterialApp(
     theme: AppTheme.light,
     home: const CourseDashboardScreen(),
@@ -46,8 +60,8 @@ void main() {
 
     expect(find.text('Python Programming'), findsOneWidget);
     expect(find.text('John Smith'), findsOneWidget);
-    expect(find.text('65%'), findsOneWidget);
-    expect(find.text('20 lessons'), findsOneWidget);
+    expect(find.text('75%'), findsOneWidget);
+    expect(find.text('4 lessons'), findsOneWidget);
     expect(find.text('Continue'), findsOneWidget);
   });
 
