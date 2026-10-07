@@ -7,6 +7,7 @@ import 'core/network/mock/mock_routes.dart';
 import 'core/storage/cache_store.dart';
 import 'features/auth/data/auth_mock_routes.dart';
 import 'features/auth/presentation/session_controller.dart';
+import 'features/courses/data/course_mock_routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,10 @@ Future<void> main() async {
   final container = ProviderContainer(
     overrides: [
       cacheStoreProvider.overrideWithValue(cacheStore),
-      mockRoutesProvider.overrideWithValue(authMockRoutes),
+      mockRoutesProvider.overrideWithValue([
+        ...authMockRoutes,
+        ...courseMockRoutes(),
+      ]),
     ],
   );
   await container.read(sessionControllerProvider.notifier).restore();
